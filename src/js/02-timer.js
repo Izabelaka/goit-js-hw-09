@@ -1,41 +1,60 @@
-// Zrobisz zadanie?
-// Zadanie 1 - zmiana koloru
-// Wykonaj to zadanie w plikach 01-color-switcher.html i 01-color-switcher.js.
+const timerFields = {
+  days: document.querySelector('[data-days]'),
+  hours: document.querySelector('[data-hours]'),
+  minutes: document.querySelector('[data-minutes]'),
+  seconds: document.querySelector('[data-seconds]'),
+};
 
-// Obejrzyj wersję demonstracyjną wideo o działaniu zmiany koloru.
+const startButton = document.querySelector('[data-start]');
+startButton.disabled = true;
+let countdownInterval = null;
+let selectedDate = null;
 
-// W HTML znajdują się przyciski «Start» i «Stop».
+flatpickr('#datetime-picker', {
+  enableTime: true,
+  time_24hr: true,
+  defaultDate: new Date(),
+  minuteIncrement: 1,
+  onClose(selectedDates) {
+    selectedDate = selectedDates[0];
+    if (selectedDate <= new Date()) {
+      alert('Please choose a date in the future');
+      startButton.disabled = true;
+    } else {
+      startButton.disabled = false;
+    }
+  },
+});
 
-// <button type="button" data-start>Start</button>
-// <button type="button" data-stop>Stop</button>
+startButton.addEventListener('click', () => {
+  startButton.disabled = true;
+  countdownInterval = setInterval(() => {
+    const timeLeft = selectedDate - new Date();
+    if (timeLeft <= 0) {
+      clearInterval(countdownInterval);
+      alert('Time is up!');
+    } else {
+      const time = convertMs(timeLeft);
+      timerFields.days.textContent = addLeadingZero(time.days);
+      timerFields.hours.textContent = addLeadingZero(time.hours);
+      timerFields.minutes.textContent = addLeadingZero(time.minutes);
+      timerFields.seconds.textContent = addLeadingZero(time.seconds);
+    }
+  }, 1000);
+});
 
+function convertMs(ms) {
+  const second = 1000;
+  const minute = second * 60;
+  const hour = minute * 60;
+  const day = hour * 24;
+  const days = Math.floor(ms / day);
+  const hours = Math.floor((ms % day) / hour);
+  const minutes = Math.floor(((ms % day) % hour) / minute);
+  const seconds = Math.floor((((ms % day) % hour) % minute) / second);
+  return { days, hours, minutes, seconds };
+}
 
-// Napisz skrypt, który po kliknięciu przycisku «Start», raz na sekundę zmienia kolor tła <body> na wartość losową używając do tego stylu inline. Po kliknięciu przycisku «Stop», kolor tła powinien przestać się zmieniać i “zatrzymać” się na aktualnym kolorze.
-
-// UWAGA
-// Zwróć uwagę na to, że przycisk «Start» można klikać w nieskończoność. Zrób tak, żeby przycisk «Start» był nieaktywny, tak długo jak zmiana kolorów jest uruchomiona (użytj atrybutu disabled).
-
-// Aby wygenerować losowy kolor użyj funkcji getRandomHexColor.
-
-// function getRandomHexColor() {
-//   return `#${Math.floor(Math.random() * 16777215).toString(16)}`;
-// }
-
-// HTML:
-// <!DOCTYPE html>
-// <html lang="en">
-//   <head>
-//     <meta charset="UTF-8" />
-//     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-//     <title>Color switcher</title>
-//     <link rel="stylesheet" href="css/common.css" />
-//   </head>
-//   <body>
-//     <p><a href="index.html">Go back</a></p>
-
-//     <button type="button" data-start>Start</button>
-//     <button type="button" data-stop>Stop</button>
-
-//     <script src="js/01-color-switcher.js" type="module"></script>
-//   </body>
-// </html>
+function addLeadingZero(value) {
+  return String(value).padStart(2, '0');
+}
